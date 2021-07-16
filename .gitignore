@@ -1,0 +1,8 @@
+# Standard R
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# renv
+renv/
