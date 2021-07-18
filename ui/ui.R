@@ -10,13 +10,6 @@ source("ui/tabs/info_tab.R")
 
 sidebar <- dashboardSidebar(
   sidebarMenu(
-    h4("Select a folder with photos", align = "center"),
-    fluidRow(column(
-      12, align = "center",
-      shinyDirButton("directory", "Folder select", "Please select a folder")
-    )),
-    hr(),
-    
     info_tab.menu,
     time_tab.menu,
     classifier_tab.menu,
@@ -36,5 +29,6 @@ body <- dashboardBody(
 ui <- dashboardPage(
   dashboardHeader(title = "easyCT"),
   sidebar,
-  body
+  body,
+  skin = "purple"
 )
