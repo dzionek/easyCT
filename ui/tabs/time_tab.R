@@ -12,6 +12,13 @@ time_tab.body <- tabItem(
     h5("Select a folder with photos"),
     shinyDirButton("directory", "Folder select", "Please select a folder"),
     h5("You have selected:"),
-    verbatimTextOutput("directorypath")
+    verbatimTextOutput("directory_path")
+  ),
+  box(
+    title = "Histogram settings", status = "info",
+    radioButtons("bin_width", label = h5("Choose bin width:"),
+                 choices = list("monthly" = "monthly", "daily" = "daily",
+                                "hourly" = "hourly"), 
+                 selected = "daily")
   )
 )

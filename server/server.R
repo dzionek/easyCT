@@ -10,6 +10,13 @@ library(dygraphs)
 library(lubridate)
 library(tidyr)
 
+dyBarChart <- function(dygraph) {
+  dyPlotter(dygraph = dygraph,
+            name = "BarChart",
+            path = system.file("plotters/barchart.js",
+                               package = "dygraphs"))
+}
+
 server <- function(input, output, session) {
   volumes <- c(Home = fs::path_home(), "R Installation" = R.home(), getVolumes()())
   
@@ -18,36 +25,43 @@ server <- function(input, output, session) {
     restrictions = system.file(package = "base"), allowDirCreate = FALSE
   )
   
-  output$directorypath <- renderPrint({
+  output$directory_path <- renderPrint({
     if (is.integer(input$directory)) {
       cat("No directory has been selected.")
     } else {
-      parseDirPath(volumes, input$directory)
+      cat(parseDirPath(volumes, input$directory))
     }
+  })
+  
+  exif_dates <- reactive({
+    image_files <- file.path(parseDirPath(volumes, input$directory))
+    exif_data <- exif_read(image_files, recursive = TRUE)$DateTimeOriginal
+    data.table(datetime = sort(ymd_hms(exif_data)))  %>%
+      mutate(value = 1) 
   })
   
   output$time_plot <- renderDygraph({
     if (!is.integer(input$directory)) {
-      image_files <- file.path(parseDirPath(volumes, input$directory))
-      print(image_files)
-      exif_data <- exif_read(image_files, recursive = TRUE)$DateTimeOriginal
-      exif_dates <- sort(ymd_hms(exif_data))
-      
       group_by_scale <- function(scale) {
         switch(
           scale,
-          "daily" = data.table(datetime = exif_dates) %>%
-            mutate(value = 1, date = date(datetime)) %>%
-            complete(date = full_seq(date, period = 1), fill = list(value = 0)) %>%
-            group_by(date) %>%
-            summarize(count = sum(value))
-        )
+          "monthly" = exif_dates() %>%
+            mutate(date = as.Date(format(datetime, "%Y-%m-01"))),
+          "daily" = exif_dates() %>%
+            mutate(date = date(datetime)),
+          "hourly" = exif_dates() %>%
+            mutate(date = ymd_hms(format(datetime, "%Y-%m-%d %H-00-00")))
+        ) %>%
+          group_by(date) %>%
+          summarize(count = sum(value))
       }
       
-      grouped_by_scale <- group_by_scale("daily")
+      grouped_by_scale <- group_by_scale(input$bin_width)
       date_ts <- xts(x = grouped_by_scale$count, order.by = grouped_by_scale$date)
-      dygraph(date_ts, main = "Histogram of photos") %>%
-        dySeries(fillGraph = TRUE, stepPlot = TRUE, color = "red") %>%
+      dygraph(date_ts, main = "Histogram of photos", ylab = "Frequency") %>%
+        dySeries(fillGraph = TRUE, stepPlot = TRUE, color = "red", 
+                 label = "Frequency") %>%
+        dyBarChart() %>%
         dyRangeSelector()
     }
   })
