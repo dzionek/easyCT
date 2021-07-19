@@ -1,3 +1,5 @@
+# UI part of info tab. Contains description of the application.
+
 library(shinydashboard)
 
 info_tab.menu <- menuItem("Description", tabName = "info", icon = icon("info"))

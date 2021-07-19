@@ -1,3 +1,6 @@
+# UI part of time tab. Contains time series histograms useful for exploratory
+# data analysis.
+
 library(shinydashboard)
 library(shinyFiles)
 library(dygraphs)
@@ -17,8 +20,8 @@ time_tab.body <- tabItem(
   box(
     title = "Histogram settings", status = "info",
     radioButtons("bin_width", label = h5("Choose bin width:"),
-                 choices = list("monthly" = "monthly", "daily" = "daily",
-                                "hourly" = "hourly"), 
-                 selected = "daily")
+                 choices = list("monthly" = "month", "weekly" = "week",
+                                "daily" = "day", "hourly" = "hour"), 
+                 selected = "day")
   )
 )

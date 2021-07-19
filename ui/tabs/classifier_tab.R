@@ -1,3 +1,5 @@
+# UI part of classifier tab.
+
 library(shinydashboard)
 
 classifier_tab.menu <- menuItem(
