@@ -4,13 +4,12 @@ library(shiny)
 library(fs)
 library(dplyr)
 library(exiftoolr)
-library(xts)
 library(data.table)
-library(dygraphs)
+library(plotly)
 library(lubridate)
 library(tidyr)
+library(stringr)
 
-source("server/utils.R")
 
 server <- function(input, output, session) {
   volumes <- c(Home = fs::path_home(), "R Installation" = R.home(), getVolumes()())
@@ -39,18 +38,52 @@ server <- function(input, output, session) {
   })
   
   # Histogram of the number of photos over time.
-  output$time_plot <- renderDygraph({
+  output$time_plot <- renderPlotly({
     if (!is.integer(input$directory)) {
-      grouped_by_scale <- exif_dates() %>%
+      grouped_by_type <- exif_dates() %>%
         mutate(date = floor_date(datetime, unit = input$bin_width)) %>%
         group_by(date) %>%
         summarize(count = sum(value))
-      date_ts <- xts(x = grouped_by_scale$count, order.by = grouped_by_scale$date)
-      dygraph(date_ts, main = "Histogram of photos", ylab = "Frequency") %>%
-        dySeries(fillGraph = TRUE, stepPlot = TRUE, color = "red", 
-                 label = "Frequency") %>%
-        dyBarChart() %>%
-        dyRangeSelector()
+      
+      plot_ly(grouped_by_type, x=~date, y=~count, type = "bar") %>%
+        layout(title = "Histogram of photos", yaxis = list(title = "Frequency"),
+               xaxis = list(title = "Time"), hovermode = "x unified")
+    }
+  })
+  
+  # Activity plot
+  output$activity_plot <- renderPlotly({
+    if (!is.integer(input$directory)) {
+      grouped_by_type <- exif_dates() %>%
+        mutate(date = floor_date(
+          datetime,
+          unit = switch(input$activity_type,
+            "weekly" = "day", "daily" = "hour"
+          ))) %>%
+        group_by(date) %>%
+        summarize(count = sum(value)) %>%
+        mutate(type = switch(input$activity_type,
+          "weekly" = wday(date, label = T, week_start = 1, abbr = F),
+          "daily" = as.POSIXct(str_pad(hour(date), 2, pad = "0"), format = "%H", tz= "UTC")
+        )) %>%
+        group_by(type) %>%
+        summarize(count = eval(parse(text = paste0(input$activity_function, "(count)"))))
+      
+      print(grouped_by_type)
+      
+      plot_ly(grouped_by_type, x=~type, y=~count, type = "bar") %>%
+        layout(
+          title = paste(str_to_title(input$activity_type), "activity histogram"),
+          yaxis = list(title = paste(
+            str_to_title(input$activity_function, " of frequency")
+            )),
+          xaxis = list(title = switch(input$activity_type,
+              "weekly" = "Days of the week", "daily" = "Hours of the day",  
+            ),
+            'tickformat' = '%H:00'
+          ),
+          hovermode = "x unified"
+        )
     }
   })
 }

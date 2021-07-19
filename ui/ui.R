@@ -30,5 +30,4 @@ ui <- dashboardPage(
   dashboardHeader(title = "easyCT"),
   sidebar,
   body,
-  skin = "purple"
 )
