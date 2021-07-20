@@ -23,7 +23,7 @@ server <- function(input, output, session) {
     ) %>% 
       rename(datetime = DateTimeOriginal) %>%
       mutate(datetime = ymd_hms(datetime), value = 1) %>%
-      dplyr::arrange("datetime")
+      dplyr::arrange(datetime)
   })
   
   is_folder_selected <- reactive({ !is.integer(input$directory) })
@@ -131,17 +131,22 @@ server <- function(input, output, session) {
   })
   
   # Files selected
-  output$files_selected <- renderText({
-    # if (is_folder_selected()) {
-    # }
-    first_date <- paste(
+  output$selected_photos <- renderDataTable({
+    first_date <- ymd_hms(paste(
       input$selection_days[[1]],
       format(input$selection_time1, "%H:%M:%S")
-      )
-    second_date <- paste(
+      ))
+    second_date <- ymd_hms(paste(
       input$selection_days[[2]],
       format(input$selection_time2, "%H:%M:%S")
-    )
-    paste0(first_date, " - ", second_date)
+    ))
+    
+    if (is_folder_selected()) {
+      selected <- exif_dates() %>%
+        filter(between(datetime, first_date, second_date)) %>%
+        select(!value)
+      
+      selected
+    }
   })
 }

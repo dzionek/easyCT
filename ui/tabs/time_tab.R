@@ -43,6 +43,6 @@ time_tab.body <- tabItem(tabName = "time", fluidRow(
   # Selected photos panel
   box(
     title = "Selected photos", status = "danger", width = 12,
-    textOutput("files_selected")
+    dataTableOutput("selected_photos")
   )
 ))
