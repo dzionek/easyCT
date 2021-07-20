@@ -3,12 +3,15 @@
 
 library(shinydashboard)
 library(shinyFiles)
+library(shinyTime)
+
 library(plotly)
 
 time_tab.menu <- menuItem("Time", tabName = "time", icon = icon("dashboard"))
 
 time_tab.body <- tabItem(tabName = "time", fluidRow(
-  box(status = "danger", plotlyOutput("time_plot")),
+  # Histogram
+  box(status = "success", plotlyOutput("time_plot")),
   box(
     title = "Select photos", status = "primary", solidHeader = TRUE,
     h5("Select a folder with photos"),
@@ -17,11 +20,13 @@ time_tab.body <- tabItem(tabName = "time", fluidRow(
     verbatimTextOutput("directory_path")
   ),
   box(
-    title = "Histogram settings", status = "danger",
+    title = "Histogram settings", status = "success",
     radioButtons("bin_width", label = "Choose the bin width:",
                  choices = c("months", "weeks", "days", "hours"), 
                  selected = "days")
   ),
+  
+  # Activity plot
   box(status = "warning", plotlyOutput("activity_plot")),
   box(
     title = "Activity plot settings", status = "warning",
@@ -30,5 +35,8 @@ time_tab.body <- tabItem(tabName = "time", fluidRow(
                  selected = "day"),
     selectInput("activity_function", label = "Choose the statistal function:",
                 choices = c("mean", "median", "sum"), selected = "mean")
-  )
+  ),
+  
+  # Selecting dates
+  uiOutput("datetime_selection")
 ))

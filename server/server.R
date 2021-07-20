@@ -14,20 +14,7 @@ library(stringr)
 server <- function(input, output, session) {
   volumes <- c(Home = fs::path_home(), "R Installation" = R.home(), getVolumes()())
   
-  # Time tab ========================================================
-  shinyDirChoose(
-    input, "directory", roots = volumes, session = session,
-    restrictions = system.file(package = "base"), allowDirCreate = FALSE
-  )
-  
-  # Folder selection
-  output$directory_path <- renderPrint({
-    if (is.integer(input$directory)) {
-      cat("No directory has been selected.")
-    } else {
-      cat(parseDirPath(volumes, input$directory))
-    }
-  })
+  # Time tab ========================================================\
   
   # Reading date and times of photos.
   exif_dates <- reactive({
@@ -37,9 +24,25 @@ server <- function(input, output, session) {
       mutate(value = 1) 
   })
   
+  is_folder_selected <- reactive({ !is.integer(input$directory) })
+  
+  shinyDirChoose(
+    input, "directory", roots = volumes, session = session,
+    restrictions = system.file(package = "base"), allowDirCreate = FALSE
+  )
+  
+  # Folder path
+  output$directory_path <- renderPrint({
+    if (is_folder_selected()) {
+      cat(parseDirPath(volumes, input$directory))
+    } else {
+      cat("No directory has been selected.")
+    }
+  })
+  
   # Histogram of the number of photos over time.
   output$time_plot <- renderPlotly({
-    if (!is.integer(input$directory)) {
+    if (is_folder_selected()) {
       grouped_by_type <- exif_dates() %>%
         mutate(date = floor_date(datetime, unit = input$bin_width)) %>%
         group_by(date) %>%
@@ -53,7 +56,7 @@ server <- function(input, output, session) {
   
   # Activity plot
   output$activity_plot <- renderPlotly({
-    if (!is.integer(input$directory)) {
+    if (is_folder_selected()) {
       grouped_by_type <- exif_dates() %>%
         mutate(date = floor_date(
           datetime,
@@ -69,13 +72,11 @@ server <- function(input, output, session) {
         group_by(type) %>%
         summarize(count = eval(parse(text = paste0(input$activity_function, "(count)"))))
       
-      print(grouped_by_type)
-      
       plot_ly(grouped_by_type, x=~type, y=~count, type = "bar") %>%
         layout(
           title = paste(str_to_title(input$activity_type), "activity histogram"),
           yaxis = list(title = paste(
-            str_to_title(input$activity_function, " of frequency")
+            str_to_title(input$activity_function, "of frequency")
             )),
           xaxis = list(title = switch(input$activity_type,
               "weekly" = "Days of the week", "daily" = "Hours of the day",  
@@ -85,5 +86,32 @@ server <- function(input, output, session) {
           hovermode = "x unified"
         )
     }
+  })
+  
+  # Datetime selection
+  output$datetime_selection <- renderUI({
+    
+    box(
+      title = "Photo selector", status = "danger",
+      dateRangeInput(
+        "selection_days", label = "Choose date range to filter photos:"
+      ),
+      fluidRow(
+        column(7,
+               timeInput(
+                 "selection_time1", "Enter time for the first date:",
+                 minute.steps = 10,
+                 value = strptime("00:00:00", "%T")
+               )
+        ),
+        column(5,
+               timeInput(
+                 "selection_time2", "Enter time for the second date:",
+                 minute.steps = 10,
+                 value = strptime("00:00:00", "%T")
+               )
+        )
+      )
+    )
   })
 }
