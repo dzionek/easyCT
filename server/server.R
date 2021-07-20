@@ -129,4 +129,19 @@ server <- function(input, output, session) {
       )
     )
   })
+  
+  # Files selected
+  output$files_selected <- renderText({
+    # if (is_folder_selected()) {
+    # }
+    first_date <- paste(
+      input$selection_days[[1]],
+      format(input$selection_time1, "%H:%M:%S")
+      )
+    second_date <- paste(
+      input$selection_days[[2]],
+      format(input$selection_time2, "%H:%M:%S")
+    )
+    paste0(first_date, " - ", second_date)
+  })
 }

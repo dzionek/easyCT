@@ -38,5 +38,11 @@ time_tab.body <- tabItem(tabName = "time", fluidRow(
   ),
   
   # Selecting dates
-  uiOutput("datetime_selection")
+  uiOutput("datetime_selection"),
+  
+  # Selected photos panel
+  box(
+    title = "Selected photos", status = "danger", width = 12,
+    textOutput("files_selected")
+  )
 ))
