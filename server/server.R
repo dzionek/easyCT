@@ -4,7 +4,6 @@ library(shiny)
 library(fs)
 library(dplyr)
 library(exiftoolr)
-library(data.table)
 library(plotly)
 library(lubridate)
 library(tidyr)
@@ -19,9 +18,12 @@ server <- function(input, output, session) {
   # Reading date and times of photos.
   exif_dates <- reactive({
     image_files <- file.path(parseDirPath(volumes, input$directory))
-    exif_data <- exif_read(image_files, recursive = TRUE)$DateTimeOriginal
-    data.table(datetime = sort(ymd_hms(exif_data)))  %>%
-      mutate(value = 1) 
+    exif_data <- exif_full <- exif_read(
+      image_files, recursive = TRUE, tags = c("SourceFile", "DateTimeOriginal")
+    ) %>% 
+      rename(datetime = DateTimeOriginal) %>%
+      mutate(datetime = ymd_hms(datetime), value = 1) %>%
+      dplyr::arrange("datetime")
   })
   
   is_folder_selected <- reactive({ !is.integer(input$directory) })
@@ -90,7 +92,6 @@ server <- function(input, output, session) {
   
   # Datetime selection
   output$datetime_selection <- renderUI({
-    a <- min(2, 3)
     start <- end <- mini <- maxi <- NULL
     
     if (is_folder_selected()) {
