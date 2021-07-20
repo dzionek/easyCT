@@ -90,11 +90,25 @@ server <- function(input, output, session) {
   
   # Datetime selection
   output$datetime_selection <- renderUI({
+    a <- min(2, 3)
+    start <- end <- mini <- maxi <- NULL
+    
+    if (is_folder_selected()) {
+      start <- mini <- floor_date(
+        head((exif_dates() %>% select(datetime))[[1]], n = 1),
+        unit = "day"
+      )
+      end <- maxi <- floor_date(
+        tail((exif_dates() %>% select(datetime))[[1]], n = 1),
+        unit = "day"
+      )
+    }
     
     box(
       title = "Photo selector", status = "danger",
       dateRangeInput(
-        "selection_days", label = "Choose date range to filter photos:"
+        "selection_days", label = "Choose date range to filter photos:",
+        start = start, end = end, min = mini, max = maxi, weekstart = 1
       ),
       fluidRow(
         column(7,
