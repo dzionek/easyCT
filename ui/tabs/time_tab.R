@@ -6,6 +6,7 @@ library(shinyFiles)
 library(shinyTime)
 
 library(plotly)
+library(DT)
 
 time_tab.menu <- menuItem("Time", tabName = "time", icon = icon("dashboard"))
 
@@ -43,6 +44,6 @@ time_tab.body <- tabItem(tabName = "time", fluidRow(
   # Selected photos panel
   box(
     title = "Selected photos", status = "danger", width = 12,
-    dataTableOutput("selected_photos")
+    DT::dataTableOutput("selected_photos")
   )
 ))

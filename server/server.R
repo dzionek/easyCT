@@ -8,6 +8,7 @@ library(plotly)
 library(lubridate)
 library(tidyr)
 library(stringr)
+library(DT)
 
 
 server <- function(input, output, session) {
@@ -131,17 +132,17 @@ server <- function(input, output, session) {
   })
   
   # Files selected
-  output$selected_photos <- renderDataTable({
-    first_date <- ymd_hms(paste(
-      input$selection_days[[1]],
-      format(input$selection_time1, "%H:%M:%S")
-      ))
-    second_date <- ymd_hms(paste(
-      input$selection_days[[2]],
-      format(input$selection_time2, "%H:%M:%S")
-    ))
-    
+  output$selected_photos <- DT::renderDataTable({
     if (is_folder_selected()) {
+      first_date <- ymd_hms(paste(
+        input$selection_days[[1]],
+        format(input$selection_time1, "%H:%M:%S")
+      ))
+      second_date <- ymd_hms(paste(
+        input$selection_days[[2]],
+        format(input$selection_time2, "%H:%M:%S")
+      ))
+      
       selected <- exif_dates() %>%
         filter(between(datetime, first_date, second_date)) %>%
         select(!value)

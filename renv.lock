@@ -9,6 +9,13 @@
     ]
   },
   "Packages": {
+    "DT": {
+      "Package": "DT",
+      "Version": "0.18",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a7d6660c869d4f41f856504828af4645"
+    },
     "MASS": {
       "Package": "MASS",
       "Version": "7.3-54",
