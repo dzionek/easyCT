@@ -17,41 +17,61 @@ classifier_tab.body <- tabItem(tabName = "classifier", fluidRow(
     ),
   
     numericInput(
-      "top_trim", value = 0, min = 0,
+      "top_trim", value = 0, min = 0, step = 1,
       label = "Select the number of pixels to be trimmed from the top:"
     ),
     numericInput(
-      "top_trim", value = 0, min = 0,
+      "top_trim", value = 0, min = 0, step = 1,
       label = "Select the number of pixels to be trimmed from the bottom:"
-    )
+    ),
+    
+    numericInput(
+      "top_trim", value = 0.5, min = 0, max = 1, step = 0.01,
+      label = "Select the threshold for classifying positive (0 ≤ x ≤ 1):"
+    ),
   ),
   
   box(
-    title = "Classifier folders", status = "primary", solidHeader = TRUE,
-    strong("Select a folder of the positive class:"),
+    title = "Classifier directories", status = "primary", solidHeader = TRUE,
+    strong("Select a directory of the positive class:"),
     HTML("&nbsp;&nbsp;&nbsp;"),
     shinyDirButton(
-      "positive_dir", "Select a folder", "Please select a folder"
+      "positive_dir", "Select a directory",
+      "Please select a directory for the positive class."
     ),
     br(), br(),
     verbatimTextOutput("positive_dir_path"),
     br(),
     
-    strong("Select a folder of the negative class:"),
+    strong("Select a directory of the negative class:"),
     HTML("&nbsp;&nbsp;&nbsp;"),
     shinyDirButton(
-      "negative_dir", "Select a folder", "Please select a folder"
+      "negative_dir", "Select a directory",
+      "Please select a directory for the negative class."
     ),
     br(), br(),
     verbatimTextOutput("negative_dir_path"),
     br(),
     
-    strong("Select a folder of the data to be classified:"),
+    strong("Select a directory of images to be classified:"),
     HTML("&nbsp;&nbsp;&nbsp;"),
     shinyDirButton(
-      "classify_dir", "Select a folder", "Please select a folder"
+      "classify_dir", "Select a directory",
+      "Please select a directory of images to be classified."
     ),
     br(), br(),
     verbatimTextOutput("classify_dir_path"),
+  ),
+  
+  box(status = "danger", width = 12,
+      column(12, align="center", h2("Training the model"))
+  ),
+  
+  box(status = "warning", width = 12,
+      column(12, align="center", h2("Classifying images"))
+  ),
+  
+  box(status = "success", width = 12,
+      column(12, align="center", h2("Applying the classification"))
   )
 ))
