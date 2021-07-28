@@ -14,7 +14,7 @@ library(DT)
 server <- function(input, output, session) {
   volumes <- c(Home = fs::path_home(), "R Installation" = R.home(), getVolumes()())
   
-  # Time tab ========================================================\
+  # Time tab ========================================================
   
   # Reading date and times of photos.
   exif_dates <- reactive({
@@ -148,6 +148,45 @@ server <- function(input, output, session) {
         select(!value)
       
       selected
+    }
+  })
+  
+  # Classify tab ========================================================
+  
+  # Directory selections
+  shinyDirChoose(
+    input, "positive_dir", roots = volumes, session = session,
+    restrictions = system.file(package = "base"), allowDirCreate = FALSE
+  )
+  output$positive_dir_path <- renderPrint({
+    if (!is.integer(input$positive_dir)) {
+      cat(parseDirPath(volumes, input$positive_dir))
+    } else {
+      cat("No directory has been selected.")
+    }
+  })
+  
+  shinyDirChoose(
+    input, "negative_dir", roots = volumes, session = session,
+    restrictions = system.file(package = "base"), allowDirCreate = FALSE
+  )
+  output$negative_dir_path <- renderPrint({
+    if (!is.integer(input$negative_dir)) {
+      cat(parseDirPath(volumes, input$negative_dir))
+    } else {
+      cat("No directory has been selected.")
+    }
+  })
+  
+  shinyDirChoose(
+    input, "classify_dir", roots = volumes, session = session,
+    restrictions = system.file(package = "base"), allowDirCreate = FALSE
+  )
+  output$classify_dir_path <- renderPrint({
+    if (!is.integer(input$classify_dir)) {
+      cat(parseDirPath(volumes, input$classify_dir))
+    } else {
+      cat("No directory has been selected.")
     }
   })
 }
