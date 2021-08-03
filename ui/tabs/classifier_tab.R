@@ -21,12 +21,12 @@ classifier_tab.body <- tabItem(tabName = "classifier", fluidRow(
       label = "Select the number of pixels to be trimmed from the top:"
     ),
     numericInput(
-      "top_trim", value = 0, min = 0, step = 1,
+      "bottom_trim", value = 0, min = 0, step = 1,
       label = "Select the number of pixels to be trimmed from the bottom:"
     ),
     
     numericInput(
-      "top_trim", value = 0.5, min = 0, max = 1, step = 0.01,
+      "threshold", value = 0.5, min = 0, max = 1, step = 0.01,
       label = "Select the threshold for classifying positive (0 ≤ x ≤ 1):"
     ),
   ),
@@ -63,8 +63,18 @@ classifier_tab.body <- tabItem(tabName = "classifier", fluidRow(
     verbatimTextOutput("classify_dir_path"),
   ),
   
+  # Training
   box(status = "danger", width = 12,
       column(12, align="center", h2("Training the model"))
+  ),
+  
+  box(status = "danger", title = "Model evaluation",
+      verbatimTextOutput("model_evaluation")),
+  box(status = "danger", title = "Activate",
+    "The following app will run an Inceptionv v3 based classifier developed
+    in Li et al.",
+    actionButton("train_button", "Train the classifier"),
+    verbatimTextOutput("test")
   ),
   
   box(status = "warning", width = 12,

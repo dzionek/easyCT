@@ -10,6 +10,10 @@ library(tidyr)
 library(stringr)
 library(DT)
 
+# Classifier files
+source("classifier/model.R", local = TRUE)
+source("classifier/generate_features.R", local = TRUE)
+source("classifier/apply_model.R", local = TRUE)
 
 server <- function(input, output, session) {
   volumes <- c(Home = fs::path_home(), "R Installation" = R.home(), getVolumes()())
@@ -188,5 +192,26 @@ server <- function(input, output, session) {
     } else {
       cat("No directory has been selected.")
     }
+  })
+  
+  classifier_inputs_ready <- reactive({
+    !is.integer(input$positive_dir) && !is.integer(input$negative_dir) &&
+      !is.integer(input$classify_dir) && length(input$model_name) > 0
+  })
+  
+  # Training the classifier
+  training_results <- eventReactive(input$train_button, {
+    if (classifier_inputs_ready()) {
+      trim_train_save(
+        as.numeric(input$top_trim), as.numeric(input$bottom_trim),
+        parseDirPath(volumes, input$positive_dir),
+        parseDirPath(volumes, input$negative_dir),
+        input$model_name
+      )
+    }
+  })
+  
+  output$model_evaluation <- renderPrint({
+    print(training_results())
   })
 }
