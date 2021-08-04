@@ -63,6 +63,35 @@ get_train_test_sets <- function(inputs, outputs) {
   )
 }
 
+TrainingCallback <- R6::R6Class("TrainingCallback",
+  inherit = KerasCallback,
+  
+  private = list(
+    .current_epoch = NA,
+    .progress = NULL
+  ),
+  
+  public = list(
+    initialize = function() {
+      private$.current_epoch = 0
+      private$.progress = shiny::Progress$new()
+    },
+    
+    on_train_begin = function(logs = list()) {
+      # on.exit(private$.progress$close())
+      private$.progress$set(message = "Training model:", value = 0)
+    },
+    
+    on_epoch_end = function(batch, logs = list()) {
+     private$.current_epoch <- private$.current_epoch + 1
+     private$.progress$inc(
+       1/200,
+       detail = paste0("Epoch: ", private$.current_epoch, "/200")
+     )
+   }
+  )
+)
+
 #' Get the classification model.
 #' 
 #' @param train_x The training set image features.
@@ -96,7 +125,10 @@ get_model <- function(train_x, test_x, train_y, test_y) {
   )
   
   # Fit model
-  classify_model %>% fit(train_x, train_y, epochs = 200, batch_size = 256)
+  classify_model %>%
+    fit(train_x, train_y, epochs = 200, batch_size = 256,
+        callbacks = list(TrainingCallback$new())
+    )
   classify_model
 }
 
