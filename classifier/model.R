@@ -78,8 +78,11 @@ TrainingCallback <- R6::R6Class("TrainingCallback",
     },
     
     on_train_begin = function(logs = list()) {
-      # on.exit(private$.progress$close())
       private$.progress$set(message = "Training model:", value = 0)
+    },
+    
+    on_train_end = function(logs = list()) {
+      private$.progress$close()
     },
     
     on_epoch_end = function(batch, logs = list()) {
@@ -150,8 +153,8 @@ get_model_evaluations <- function(classify_model, test_x, test_y) {
   proportion <- prop.table(confusion_matrix)
   
   list(
-    "loss" = loss,
-    "accuracy" = accuracy,
+    "loss" = round(loss, 3),
+    "accuracy" = round(accuracy, 3),
     "confusion_matrix" = confusion_matrix,
     "proportion" = proportion
   )

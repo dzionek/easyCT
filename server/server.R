@@ -9,6 +9,8 @@ library(lubridate)
 library(tidyr)
 library(stringr)
 library(DT)
+library(yardstick)
+library(ggplot2)
 
 # Classifier files
 source("classifier/model.R", local = TRUE)
@@ -211,7 +213,26 @@ server <- function(input, output, session) {
     }
   })
   
-  output$model_evaluation <- renderPrint({
-    print(training_results())
+  output$confusion_matrix <- renderPlot({
+    confusion_matrix <- training_results()$confusion_matrix
+    autoplot(yardstick::conf_mat(confusion_matrix), type = "heatmap") +
+      scale_fill_gradient(low="#D6EAF8",high = "#2E86C1") +
+      theme(legend.position = "right", plot.title = element_text(hjust = 0.5)) +
+      labs(title = "Confusion matrix", x = "Actual", y = "Predicted")
+  })
+  
+  output$proportion_matrix <- renderPlot({
+    proportion_matrix <- training_results()$proportion
+    autoplot(yardstick::conf_mat(proportion_matrix), type = "heatmap") +
+      scale_fill_gradient(low="#D6EAF8",high = "#2E86C1") +
+      theme(legend.position = "right", plot.title = element_text(hjust = 0.5)) +
+      labs(title = "Confusion matrix (proportion)", x = "Actual", y = "Predicted")
+  })
+  
+  output$train_result <- renderUI({
+    box(status = "danger", title = "Train evaluation metrics",
+        h4(paste("Accuracy:", training_results()$accuracy)),
+        h4(paste("Loss:", training_results()$loss))
+    )
   })
 }

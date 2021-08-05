@@ -68,14 +68,20 @@ classifier_tab.body <- tabItem(tabName = "classifier", fluidRow(
       column(12, align="center", h2("Training the model"))
   ),
   
-  box(status = "danger", title = "Model evaluation",
-      verbatimTextOutput("model_evaluation")),
-  box(status = "danger", title = "Activate",
+  tabBox(title = "Confusion matrix", side = "right",
+    tabPanel("Number of photos", plotOutput("confusion_matrix")),
+    tabPanel("Proportion", plotOutput("proportion_matrix"))
+  ),
+  
+  box(status = "danger", title = "Train",
     "The following app will run an Inceptionv v3 based classifier developed
     in Li et al.",
+    br(),
+    br(),
     actionButton("train_button", "Train the classifier"),
-    verbatimTextOutput("test")
   ),
+  
+  uiOutput("train_result"),
   
   box(status = "warning", width = 12,
       column(12, align="center", h2("Classifying images"))

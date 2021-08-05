@@ -19,6 +19,9 @@ sidebar <- dashboardSidebar(
 )
 
 body <- dashboardBody(
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
+  ),
   tabItems(
     time_tab.body,
     classifier_tab.body,
