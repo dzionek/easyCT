@@ -216,7 +216,7 @@ server <- function(input, output, session) {
   output$confusion_matrix <- renderPlot({
     confusion_matrix <- training_results()$confusion_matrix
     autoplot(yardstick::conf_mat(confusion_matrix), type = "heatmap") +
-      scale_fill_gradient(low="#D6EAF8",high = "#2E86C1") +
+      scale_fill_gradient(low="#fee8c8",high = "#e34a33") +
       theme(legend.position = "right", plot.title = element_text(hjust = 0.5)) +
       labs(title = "Confusion matrix", x = "Actual", y = "Predicted")
   })
@@ -224,15 +224,31 @@ server <- function(input, output, session) {
   output$proportion_matrix <- renderPlot({
     proportion_matrix <- training_results()$proportion
     autoplot(yardstick::conf_mat(proportion_matrix), type = "heatmap") +
-      scale_fill_gradient(low="#D6EAF8",high = "#2E86C1") +
+      scale_fill_gradient(low="#fee8c8",high = "#e34a33") +
       theme(legend.position = "right", plot.title = element_text(hjust = 0.5)) +
       labs(title = "Confusion matrix (proportion)", x = "Actual", y = "Predicted")
   })
   
   output$train_result <- renderUI({
-    box(status = "danger", title = "Train evaluation metrics",
-        h4(paste("Accuracy:", training_results()$accuracy)),
-        h4(paste("Loss:", training_results()$loss))
+    if (is.numeric(training_results()$accuracy)) {
+      box(status = "danger", title = "Model path",
+          "The model was successfuly saved at:",
+          br(),
+          pre(paste0(getwd(), "/_cache/models/", input$model_name))
+      ) 
+    }
+  })
+  
+  output$accuracy_box <- renderValueBox({
+    valueBox(
+      training_results()$accuracy, "Accuracy", color = "red",
+      icon = icon("crosshairs", lib = "font-awesome")
+    )
+  })
+  output$loss_box <- renderValueBox({
+    valueBox(
+      training_results()$loss, "Loss", color = "red",
+      icon("level-down-alt", lib = "font-awesome")
     )
   })
 }

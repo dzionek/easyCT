@@ -31,8 +31,8 @@ get_input_output <- function(pos_directory_path, neg_directory_path,
   inputs_neg <- get_features("negative class", neg_directory_path, top_trim, bottom_trim)
   
   # Save inputs
-  fwrite(inputs_pos, "inputs_pos.csv")
-  fwrite(inputs_neg, "inputs_neg.csv") 
+  # fwrite(inputs_pos, "inputs_pos.csv")
+  # fwrite(inputs_neg, "inputs_neg.csv") 
   
   # Get outputs matched to inputs
   output_pos = rep(1, nrow(inputs_pos))
@@ -165,7 +165,7 @@ get_model_evaluations <- function(classify_model, test_x, test_y) {
 #' @param classify_model The model created in the process
 #' @param model_name The name used for saving the file.
 save_model <- function(classify_model, model_name) {
-  classify_model %>% save_model_tf(model_name)
+  classify_model %>% save_model_tf(paste0("_cache/models/", model_name))
 }
 
 #' Entry point for the entire process of trimming images, training model and

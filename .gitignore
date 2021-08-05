@@ -7,3 +7,6 @@
 
 # renv
 renv/
+
+# custom cache files
+_cache/

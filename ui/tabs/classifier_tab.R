@@ -82,6 +82,8 @@ classifier_tab.body <- tabItem(tabName = "classifier", fluidRow(
   ),
   
   uiOutput("train_result"),
+  valueBoxOutput("accuracy_box", width = 3),
+  valueBoxOutput("loss_box", width = 3),
   
   box(status = "warning", width = 12,
       column(12, align="center", h2("Classifying images"))
