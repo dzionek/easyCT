@@ -150,7 +150,7 @@ get_model_evaluations <- function(classify_model, test_x, test_y) {
   prob_y <- classify_model %>% predict(test_x, batch_size = 128)
   pred_y <- round(prob_y)
   confusion_matrix <- table(pred_y, test_y)
-  proportion <- prop.table(confusion_matrix)
+  proportion <- prop.table(confusion_matrix, 2)
   
   list(
     "loss" = round(loss, 3),
