@@ -235,7 +235,7 @@ server <- function(input, output, session) {
   output$train_result <- renderUI({
     if (is.numeric(training_results()$accuracy)) {
       box(status = "danger", title = "Model path",
-          "The model was successfuly saved at:",
+          "The model was successfully saved at:",
           br(),
           pre(paste0(MODELS_PATH, input$model_name))
       ) 
@@ -273,13 +273,17 @@ server <- function(input, output, session) {
         neg_label = input$negative_label
       )
       
-      fread(paste0(save_dir, "/_results_v3.csv"))
+      classified_path <- paste0(save_dir, "/_results_v3.csv")
+      list(
+        "path" = classified_path,
+        "table" = fread(classified_path)
+      )
     }
   })
   
   output$classification_result <- renderPlotly ({
     fig <- plot_ly(
-      classification_results(), labels = ~class, values = 1, type = 'pie',
+      classification_results()$table, labels = ~class, values = 1, type = 'pie',
       textposition = 'inside',
       textinfo = 'label+percent',
       showlegend = TRUE
@@ -289,5 +293,15 @@ server <- function(input, output, session) {
                    xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                    yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                    legend=list(title=list(text='<b> Label </b>')))
+  })
+  
+  output$classification_output <- renderUI({
+    if (is.data.table(classification_results()$table)) {
+      box(status = "warning", title = "Classification output",
+          "The classification was successfully saved at:",
+          br(),
+          pre(classification_results()$path)
+      ) 
+    }
   })
 }
