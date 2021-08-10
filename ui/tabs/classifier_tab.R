@@ -99,8 +99,9 @@ classifier_tab.body <- tabItem(tabName = "classifier", fluidRow(
       column(12, align="center", h2("Classifying images"))
   ),
   
-  box(status = "warning", title = "Classification result",
-    plotlyOutput("classification_result")
+  tabBox(title = "Classification results", side = "right",
+         tabPanel("Ratio", plotlyOutput("classification_ratio")),
+         tabPanel("Histogram", plotlyOutput("classification_histogram"))
   ),
   
   box(status = "warning", title = "Classify",

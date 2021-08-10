@@ -11,6 +11,7 @@ library(stringr)
 library(DT)
 library(yardstick)
 library(ggplot2)
+library(purrr)
 
 # Classifier files
 source("classifier/model.R", local = TRUE)
@@ -19,6 +20,9 @@ source("classifier/apply_model.R", local = TRUE)
 
 MODELS_PATH <- paste0(getwd(), "/_cache/models/")
 RESULTS_PATH <- paste0(getwd(), "/_cache/results/")
+
+POSITIVE_COLOR <- "#00CC96"
+NEGATIVE_COLOR <- "#EF553B"
 
 server <- function(input, output, session) {
   volumes <- c(Home = fs::path_home(), "R Installation" = R.home(), getVolumes()())
@@ -281,18 +285,38 @@ server <- function(input, output, session) {
     }
   })
   
-  output$classification_result <- renderPlotly ({
+  output$classification_ratio <- renderPlotly ({
+    num_positive <- sum(classification_results()$table$class == input$positive_label)
+    num_negative <- sum(classification_results()$table$class == input$negative_label)
     fig <- plot_ly(
-      classification_results()$table, labels = ~class, values = 1, type = 'pie',
-      textposition = 'inside',
-      textinfo = 'label+percent',
-      showlegend = TRUE
+      labels = c(input$positive_label, input$negative_label),
+      values = c(num_positive, num_negative), type = 'pie',
+      textposition = 'inside', textinfo = 'label+percent', showlegend = TRUE,
+      marker = list(colors=c(POSITIVE_COLOR, NEGATIVE_COLOR))
     )
     
     fig %>% layout(title = "Classified images",
                    xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                    yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                    legend=list(title=list(text='<b> Label </b>')))
+  })
+  
+  output$classification_histogram <- renderPlotly ({
+    probabilities <- round(classification_results()$table$p, 2)
+    
+    plotly_empty() %>%
+      add_histogram(
+        x = keep(probabilities, function(x) x >= input$threshold),
+        name = input$positive_label, marker = list(color=POSITIVE_COLOR)
+      ) %>%
+      add_histogram(
+        x = keep(probabilities, function(x) x < input$threshold), 
+        name = input$negative_label, marker = list(color=NEGATIVE_COLOR)
+      ) %>%
+      layout(barmode = "overlay", title = "Classification probability histogram",
+             yaxis = list(title = "Frequency"),
+             xaxis = list(title = "Probability"),
+             hovermode = "x unified", legend=list(title=list(text="<b> Label </b>")))
   })
   
   output$classification_output <- renderUI({
