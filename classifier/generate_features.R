@@ -10,6 +10,7 @@ library(tensorflow)  # Tensor flow also the Python Tensorflow
 library(keras)
 library(reticulate)
 library(data.table)
+library(lubridate)
 library(shiny)
 
 source_python("classifier/crop_generator.py")
@@ -65,13 +66,15 @@ extract_features_inception_v3 <- function(img_path, top_trim, bottom_trim) {
 
 #' Get features from a directory of images. Optionally save them to a file.
 #' 
+#' @param message The message to be displayed next to the progress bar.
 #' @param directory_path The path to the base directory of images.
 #' @param top_trim The number of pixels that should be trimmed from the top.
 #' @param bottom_trim The number of pixels that should be trimmed from the bottom.
 #' @param save True if the features should be saved, false otherwise.
+#' @param save_dir The optional parameter used when you want to save the features.
 #' @return The data frame of features associated with the given images.
 get_features <- function(message, directory_path, top_trim, bottom_trim,
-                         save = FALSE) {
+                         save = FALSE, save_dir = NULL) {
   files <- list.files(
     directory_path, pattern = "*.JPG|*.jpg", full.names = TRUE
   )
@@ -83,11 +86,16 @@ get_features <- function(message, directory_path, top_trim, bottom_trim,
   on.exit(progress$close())
   progress$set(message = paste0("Processing ", message, ":"), value = 0)
   
+  ptm <- proc.time()
   for (i in seq_along(files)) {
     f <- files[i]
+    full_time <- (proc.time() - ptm)[[3]]  # elapsed time
+    est_time <- round(full_time / i * (number_of_files - i)) %>%
+      duration("seconds")
+    
     progress$inc(
       1/number_of_files,
-      detail = paste0("Processing file ", i, "/", number_of_files)
+      detail = paste0("Image ", i, "/", number_of_files,". Est. time: ", est_time)
       )
     feature_list[[f]] <- extract_features_inception_v3(f, top_trim, bottom_trim)
   }
@@ -97,7 +105,7 @@ get_features <- function(message, directory_path, top_trim, bottom_trim,
     features_df <- data.frame(filename = names(feature_list), matrix(
       unlist(feature_list), nrow=length(feature_list), byrow=TRUE
     ))
-    fwrite(features_df, "_features_v3.csv")
+    fwrite(features_df, paste0(save_dir, "/_features_v3.csv"))
   } else {
     features_df <- data.frame(matrix(
       unlist(feature_list), nrow=length(feature_list), byrow=TRUE

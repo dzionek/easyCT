@@ -17,6 +17,9 @@ source("classifier/model.R", local = TRUE)
 source("classifier/generate_features.R", local = TRUE)
 source("classifier/apply_model.R", local = TRUE)
 
+MODELS_PATH <- paste0(getwd(), "/_cache/models/")
+RESULTS_PATH <- paste0(getwd(), "/_cache/results/")
+
 server <- function(input, output, session) {
   volumes <- c(Home = fs::path_home(), "R Installation" = R.home(), getVolumes()())
   
@@ -234,7 +237,7 @@ server <- function(input, output, session) {
       box(status = "danger", title = "Model path",
           "The model was successfuly saved at:",
           br(),
-          pre(paste0(getwd(), "/_cache/models/", input$model_name))
+          pre(paste0(MODELS_PATH, input$model_name))
       ) 
     }
   })
@@ -250,5 +253,41 @@ server <- function(input, output, session) {
       training_results()$loss, "Loss", color = "red",
       icon("level-down-alt", lib = "font-awesome")
     )
+  })
+  
+  # Classifying images
+  classification_results <- eventReactive(input$classify_button, {
+    if (classifier_inputs_ready()) {
+      time <- format(Sys.time(), "%d%h%Y_%H-%M")
+      dir.create(paste0(RESULTS_PATH, time), recursive = TRUE)
+      save_dir <- paste0(RESULTS_PATH, time)
+      
+      get_features(
+        "images to classify", parseDirPath(volumes, input$classify_dir),
+        input$top_trim, input$bottom_trim, save = TRUE, save_dir = save_dir
+      )
+      
+      apply_model(
+        source_dir = save_dir, model_name = paste0(MODELS_PATH, input$model_name),
+        threshold = input$threshold, pos_label = input$positive_label, 
+        neg_label = input$negative_label
+      )
+      
+      fread(paste0(save_dir, "/_results_v3.csv"))
+    }
+  })
+  
+  output$classification_result <- renderPlotly ({
+    fig <- plot_ly(
+      classification_results(), labels = ~class, values = 1, type = 'pie',
+      textposition = 'inside',
+      textinfo = 'label+percent',
+      showlegend = TRUE
+    )
+    
+    fig %>% layout(title = "Classified images",
+                   xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                   yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                   legend=list(title=list(text='<b> Label </b>')))
   })
 }

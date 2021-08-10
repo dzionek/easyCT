@@ -33,6 +33,11 @@ classifier_tab.body <- tabItem(tabName = "classifier", fluidRow(
   
   box(
     title = "Classifier directories", status = "primary", solidHeader = TRUE,
+    h3("Positive class"),
+    textInput(
+      "positive_label", label = "Choose a label for the positive class:",
+      placeholder = "cats"
+    ),
     strong("Select a directory of the positive class:"),
     HTML("&nbsp;&nbsp;&nbsp;"),
     shinyDirButton(
@@ -41,8 +46,12 @@ classifier_tab.body <- tabItem(tabName = "classifier", fluidRow(
     ),
     br(), br(),
     verbatimTextOutput("positive_dir_path"),
-    br(),
-    
+
+    h3("Negative class"),
+    textInput(
+      "negative_label", label = "Choose a label for the negative class:",
+      placeholder = "dogs"
+    ),
     strong("Select a directory of the negative class:"),
     HTML("&nbsp;&nbsp;&nbsp;"),
     shinyDirButton(
@@ -51,8 +60,8 @@ classifier_tab.body <- tabItem(tabName = "classifier", fluidRow(
     ),
     br(), br(),
     verbatimTextOutput("negative_dir_path"),
-    br(),
     
+    h3("Images to classify"),
     strong("Select a directory of images to be classified:"),
     HTML("&nbsp;&nbsp;&nbsp;"),
     shinyDirButton(
@@ -85,9 +94,23 @@ classifier_tab.body <- tabItem(tabName = "classifier", fluidRow(
   valueBoxOutput("accuracy_box", width = 3),
   valueBoxOutput("loss_box", width = 3),
   
+  # Classifying
   box(status = "warning", width = 12,
       column(12, align="center", h2("Classifying images"))
   ),
+  
+  box(status = "warning", title = "Classification result",
+    plotlyOutput("classification_result")
+  ),
+  
+  box(status = "warning", title = "Classify",
+    "The button below will classify the images in the directory you selected",
+    br(),
+    br(),
+    actionButton("classify_button", "Classify images")  
+  ),
+  
+  uiOutput("classification_output"),
   
   box(status = "success", width = 12,
       column(12, align="center", h2("Applying the classification"))
