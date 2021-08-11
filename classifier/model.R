@@ -15,9 +15,6 @@ library(zeallot)
 
 source("classifier/generate_features.R")
 
-# Set seed for reproducibility
-set.seed(101) 
-
 #' Get input and output matrices from the supervised set.
 #' 
 #' @param pos_directory_path The path to the positive set directory.
@@ -51,6 +48,9 @@ get_input_output <- function(pos_directory_path, neg_directory_path,
 #' @param outputs The classifications of images.
 #' @return The train and test sets in a list.
 get_train_test_sets <- function(inputs, outputs) {
+  # Set seed for reproducibility
+  set.seed(101) 
+  
   # Get indices to split outputs into training (75%) and test (25%)
   sample <- caTools::sample.split(outputs, SplitRatio = .75)
   
