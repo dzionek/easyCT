@@ -1,12 +1,119 @@
 # UI part of classifier tab.
 
 library(shinydashboard)
+library(shinyFiles)
 
 classifier_tab.menu <- menuItem(
   "Classifier", icon = icon("th"), tabName = "classifier"
 )
 
-classifier_tab.body <- tabItem(
-  tabName = "classifier",
-  h2("Classification")
-)
+classifier_tab.body <- tabItem(tabName = "classifier", fluidRow(
+  box(
+    title = "Classifier settings", status = "primary", solidHeader = TRUE,
+    
+    textInput(
+      "model_name", placeholder = "cats_dogs",
+      label = "Select a name for your model:"
+    ),
+  
+    numericInput(
+      "top_trim", value = 0, min = 0, step = 1,
+      label = "Select the number of pixels to be trimmed from the top:"
+    ),
+    numericInput(
+      "bottom_trim", value = 0, min = 0, step = 1,
+      label = "Select the number of pixels to be trimmed from the bottom:"
+    ),
+    
+    numericInput(
+      "threshold", value = 0.5, min = 0, max = 1, step = 0.01,
+      label = "Select the threshold for classifying positive (0 ≤ x ≤ 1):"
+    ),
+  ),
+  
+  box(
+    title = "Classifier directories", status = "primary", solidHeader = TRUE,
+    h3("Positive class"),
+    textInput(
+      "positive_label", label = "Choose a label for the positive class:",
+      placeholder = "cats"
+    ),
+    strong("Select a directory of the positive class:"),
+    HTML("&nbsp;&nbsp;&nbsp;"),
+    shinyDirButton(
+      "positive_dir", "Select a directory",
+      "Please select a directory for the positive class."
+    ),
+    br(), br(),
+    verbatimTextOutput("positive_dir_path"),
+
+    h3("Negative class"),
+    textInput(
+      "negative_label", label = "Choose a label for the negative class:",
+      placeholder = "dogs"
+    ),
+    strong("Select a directory of the negative class:"),
+    HTML("&nbsp;&nbsp;&nbsp;"),
+    shinyDirButton(
+      "negative_dir", "Select a directory",
+      "Please select a directory for the negative class."
+    ),
+    br(), br(),
+    verbatimTextOutput("negative_dir_path"),
+    
+    h3("Images to classify"),
+    strong("Select a directory of images to be classified:"),
+    HTML("&nbsp;&nbsp;&nbsp;"),
+    shinyDirButton(
+      "classify_dir", "Select a directory",
+      "Please select a directory of images to be classified."
+    ),
+    br(), br(),
+    verbatimTextOutput("classify_dir_path"),
+  ),
+  
+  # Training
+  box(status = "danger", width = 12,
+      column(12, align="center", h2("Training the model"))
+  ),
+  
+  tabBox(title = "Confusion matrix", side = "right",
+    tabPanel("Number of photos", plotOutput("confusion_matrix")),
+    tabPanel("Proportion", plotOutput("proportion_matrix"))
+  ),
+  
+  box(status = "danger", title = "Train",
+    "The following app will run an Inceptionv v3 based classifier developed
+    in Li et al.",
+    br(),
+    br(),
+    actionButton("train_button", "Train the classifier"),
+  ),
+  
+  uiOutput("train_result"),
+  valueBoxOutput("accuracy_box", width = 3),
+  valueBoxOutput("loss_box", width = 3),
+  
+  # Classifying
+  box(status = "warning", width = 12,
+      column(12, align="center", h2("Classifying images"))
+  ),
+  
+  tabBox(title = "Classification results", side = "right",
+         tabPanel("Ratio", plotlyOutput("classification_ratio")),
+         tabPanel("Histogram", plotlyOutput("classification_histogram"))
+  ),
+  
+  box(status = "warning", title = "Classify",
+    "The button below will classify the images in the directory you selected",
+    br(),
+    br(),
+    actionButton("classify_button", "Classify images")  
+  ),
+  
+  uiOutput("classification_output"),
+  
+  box(status = "success", width = 12,
+      column(12, align="center", h2("Applying the classification"))
+  )
+))
