@@ -205,8 +205,11 @@ server <- function(input, output, session) {
   })
   
   classifier_inputs_ready <- reactive({
-    !is.integer(input$positive_dir) && !is.integer(input$negative_dir) &&
-      !is.integer(input$classify_dir) && length(input$model_name) > 0
+    !is.integer(input$classify_dir) && is.character(input$model_name) &&
+    (input$model_name != "") && (
+      (!is.integer(input$positive_dir) && !is.integer(input$negative_dir))
+      || !as.logical(input$new_model_selection)
+    )
   })
   
   # Load labels from meta.csv if selected an existing model.
@@ -429,19 +432,29 @@ server <- function(input, output, session) {
   output$classification_histogram <- renderPlotly ({
     probabilities <- round(classification_results()$table$p, 2)
     
-    plotly_empty() %>%
-      add_histogram(
-        x = keep(probabilities, function(x) x >= input$threshold),
+    positives <- keep(probabilities, function(x) x >= input$threshold)
+    negatives <- keep(probabilities, function(x) x < input$threshold)
+      
+    fig <- plotly_empty() 
+    
+    if (length(positives) > 0) {
+      fig <- fig %>% add_histogram(
+        x = positives,
         name = input$positive_label, marker = list(color=POSITIVE_COLOR)
-      ) %>%
-      add_histogram(
-        x = keep(probabilities, function(x) x < input$threshold), 
+      ) 
+    }
+    
+    if (length(negatives) > 0) {
+      fig <- fig %>% add_histogram(
+        x = negatives, 
         name = input$negative_label, marker = list(color=NEGATIVE_COLOR)
-      ) %>%
-      layout(barmode = "overlay", title = "Classification probability histogram",
-             yaxis = list(title = "Frequency"),
-             xaxis = list(title = "Probability"),
-             hovermode = "x unified", legend=list(title=list(text="<b> Label </b>")))
+      ) 
+    }
+
+    fig %>% layout(barmode = "overlay", title = "Classification probability histogram",
+              yaxis = list(title = "Frequency"),
+              xaxis = list(title = "Probability"),
+              hovermode = "x unified", legend=list(title=list(text="<b> Label </b>")))
   })
   
   output$classification_output <- renderUI({
