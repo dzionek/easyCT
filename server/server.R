@@ -310,9 +310,12 @@ server <- function(input, output, session) {
             column(12, align="center", h2("Training the model"))
         ),
         
-        tabBox(title = "Confusion matrix", side = "right",
-               tabPanel("Number of photos", plotOutput("confusion_matrix")),
-               tabPanel("Proportion", plotOutput("proportion_matrix"))
+        tags$div(
+          class = "tabbox-danger",
+          tabBox(title = "Confusion matrix", side = "right",
+                 tabPanel("Number of photos", plotOutput("confusion_matrix")),
+                 tabPanel("Proportion", plotOutput("proportion_matrix"))
+          )
         ),
         
         box(status = "danger", title = "Train",
