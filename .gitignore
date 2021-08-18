@@ -9,4 +9,4 @@
 renv/
 
 # custom cache files
-_cache/
+app/_cache/
