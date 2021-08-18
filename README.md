@@ -50,7 +50,7 @@ docker run -d --rm -p 3838:3838 -v [PUT YOUR PATH HERE]:/root/photos dzionek/eas
 The application will be available after a few minutes at [http://localhost:3838/](http://localhost:3838/).
 
 ### Example installing and running.
-Suppose I use Windows and have my camera trap photos stored at an external hard drive in a folder
+Suppose I use Windows and have my camera trap photos stored on an external hard drive in a folder
 `H:\camera_traps\site01`. Then, all I need to do (for installing and running) is paste:
 
 ```{bash}
@@ -59,7 +59,7 @@ docker run -d --rm -p 3838:3838 -v H:\camera_traps\site01:/root/photos dzionek/e
 ```
 
 After that, I wait 1-2 minutes so that my application is ready. Then, I open my favourite web browser
-(say Firefox) and go the link [http://localhost:3838/](http://localhost:3838/). The photos stored at
+(say Firefox) and go to the link [http://localhost:3838/](http://localhost:3838/). The photos stored at
 `H:\camera_traps\site01` will be available inside `Home/photos` directory within the web application.
 
 ## Author
