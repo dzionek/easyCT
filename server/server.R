@@ -20,6 +20,7 @@ source("classifier/apply_model.R", local = TRUE)
 
 MODELS_PATH <- paste0(getwd(), "/_cache/models/")
 RESULTS_PATH <- paste0(getwd(), "/_cache/results/")
+MODEL_METADATA_FILE <- "meta.csv"
 
 POSITIVE_COLOR <- "#00CC96"
 NEGATIVE_COLOR <- "#EF553B"
@@ -204,11 +205,134 @@ server <- function(input, output, session) {
   })
   
   classifier_inputs_ready <- reactive({
-    !is.integer(input$positive_dir) && !is.integer(input$negative_dir) &&
-      !is.integer(input$classify_dir) && length(input$model_name) > 0
+    !is.integer(input$classify_dir) && is.character(input$model_name) &&
+    (input$model_name != "") && (
+      (!is.integer(input$positive_dir) && !is.integer(input$negative_dir))
+      || !as.logical(input$new_model_selection)
+    )
+  })
+  
+  # Load labels from meta.csv if selected an existing model.
+  loaded_labels <- reactive({
+    if (!as.logical(input$new_model_selection) && is.character(input$model_name)
+        && input$model_name != "") {
+      tryCatch(
+        expr = {
+          fread(file.path(MODELS_PATH, input$model_name, MODEL_METADATA_FILE))
+        },
+        error = function(cond) {
+          return(NULL)
+        }
+      )
+    } else {
+      NULL
+    }
+  })
+  
+  output$labels <- renderUI({
+    existing_labels <- loaded_labels()
+    existing_pos_label <- ifelse(is.data.table(existing_labels),
+                                  existing_labels$positive_label, "")
+    existing_neg_label <- ifelse(is.data.table(existing_labels),
+                                 existing_labels$negative_label, "")
+    tagList(
+      textInput(
+        "positive_label", label = "Choose a label for the positive class:",
+        placeholder = "cats", value = existing_pos_label
+      ),
+      
+      textInput(
+        "negative_label", label = "Choose a label for the negative class:",
+        placeholder = "dogs", value = existing_neg_label
+      ),
+    )
+  })
+  
+  output$model_settings2 <- renderUI({
+    if (input$new_model_selection) {
+      # We want to create a new model.
+      box(title = "New model settings", status = "primary", solidHeader = TRUE,
+          width = 12,
+          textInput(
+            "model_name", placeholder = "cats_dogs",
+            label = "Select a name for your model:"
+          ),
+          
+          h3("Positive class"),
+          textInput(
+            "positive_label", label = "Choose a label for the positive class:",
+            placeholder = "cats"
+          ),
+          strong("Select a directory of the positive class:"),
+          HTML("&nbsp;&nbsp;&nbsp;"),
+          shinyDirButton(
+            "positive_dir", "Select a directory",
+            "Please select a directory for the positive class."
+          ),
+          br(), br(),
+          verbatimTextOutput("positive_dir_path"),
+          
+          h3("Negative class"),
+          textInput(
+            "negative_label", label = "Choose a label for the negative class:",
+            placeholder = "dogs"
+          ),
+          strong("Select a directory of the negative class:"),
+          HTML("&nbsp;&nbsp;&nbsp;"),
+          shinyDirButton(
+            "negative_dir", "Select a directory",
+            "Please select a directory for the negative class."
+          ),
+          br(), br(),
+          verbatimTextOutput("negative_dir_path"),
+      )
+      
+    } else {
+      # We want to use an existing model from _cache.
+      box(title = "Prebuilt model settings", status = "primary", solidHeader = TRUE,
+        width = 12,
+        
+        selectInput(
+          "model_name", "Choose your model from the _cache/models directory:",
+          choices = list.dirs(MODELS_PATH, recursive = FALSE, full.names = FALSE)
+        ),
+        
+        uiOutput("labels"),
+      )
+    }
   })
   
   # Training the classifier
+  output$training <- renderUI({
+    if (input$new_model_selection) {
+      tagList(
+        box(status = "danger", width = 12,
+            column(12, align="center", h2("Training the model"))
+        ),
+        
+        tags$div(
+          class = "tabbox-danger",
+          tabBox(title = "Confusion matrix", side = "right",
+                 tabPanel("Number of photos", plotOutput("confusion_matrix")),
+                 tabPanel("Proportion", plotOutput("proportion_matrix"))
+          )
+        ),
+        
+        box(status = "danger", title = "Train",
+            "The following app will run an Inceptionv v3 based classifier developed
+      in Li et al.",
+      br(),
+      br(),
+      actionButton("train_button", "Train the classifier"),
+        ),
+      
+      uiOutput("train_result"),
+      valueBoxOutput("accuracy_box", width = 3),
+      valueBoxOutput("loss_box", width = 3),
+      ) 
+    }
+  })
+  
   training_results <- eventReactive(input$train_button, {
     if (classifier_inputs_ready()) {
       trim_train_save(
@@ -238,10 +362,17 @@ server <- function(input, output, session) {
   
   output$train_result <- renderUI({
     if (is.numeric(training_results()$accuracy)) {
+      model_dir <- paste0(MODELS_PATH, input$model_name)
+      fwrite(
+        list("positive_label" = input$positive_label,
+             "negative_label" = input$negative_label),
+        file = paste0(model_dir, "/", MODEL_METADATA_FILE)
+      )
+      
       box(status = "danger", title = "Model path",
           "The model was successfully saved at:",
           br(),
-          pre(paste0(MODELS_PATH, input$model_name))
+          pre(model_dir)
       ) 
     }
   })
@@ -304,19 +435,29 @@ server <- function(input, output, session) {
   output$classification_histogram <- renderPlotly ({
     probabilities <- round(classification_results()$table$p, 2)
     
-    plotly_empty() %>%
-      add_histogram(
-        x = keep(probabilities, function(x) x >= input$threshold),
+    positives <- keep(probabilities, function(x) x >= input$threshold)
+    negatives <- keep(probabilities, function(x) x < input$threshold)
+      
+    fig <- plotly_empty() 
+    
+    if (length(positives) > 0) {
+      fig <- fig %>% add_histogram(
+        x = positives,
         name = input$positive_label, marker = list(color=POSITIVE_COLOR)
-      ) %>%
-      add_histogram(
-        x = keep(probabilities, function(x) x < input$threshold), 
+      ) 
+    }
+    
+    if (length(negatives) > 0) {
+      fig <- fig %>% add_histogram(
+        x = negatives, 
         name = input$negative_label, marker = list(color=NEGATIVE_COLOR)
-      ) %>%
-      layout(barmode = "overlay", title = "Classification probability histogram",
-             yaxis = list(title = "Frequency"),
-             xaxis = list(title = "Probability"),
-             hovermode = "x unified", legend=list(title=list(text="<b> Label </b>")))
+      ) 
+    }
+
+    fig %>% layout(barmode = "overlay", title = "Classification probability histogram",
+              yaxis = list(title = "Frequency"),
+              xaxis = list(title = "Probability"),
+              hovermode = "x unified", legend=list(title=list(text="<b> Label </b>")))
   })
   
   output$classification_output <- renderUI({

@@ -1,16 +1,18 @@
 /* Get the box upper line for tab box. */
-.nav-tabs-custom {
-  /* box and box-red elements */
-  position: relative;
-  border-radius: 3px;
-  background: #fff;
+
+.tabbox-warning .nav-tabs-custom {
+  border-top: 3px solid #f39c12;
+}
+
+.tabbox-danger .nav-tabs-custom {
   border-top: 3px solid #dd4b39;
-  margin-bottom: 20px;
-  width: 100%;
-  box-shadow: 0 1px 1px rgb(0 0 0 / 10%);
 }
 
 /* Active tab in the tab box */
-.nav-tabs-custom>.nav-tabs>li.active {
+.tabbox-warning .nav-tabs-custom > .nav-tabs > li.active {
+    border-top-color: #f39c12;
+}
+
+.tabbox-danger .nav-tabs-custom > .nav-tabs > li.active {
     border-top-color: #dd4b39;
 }
