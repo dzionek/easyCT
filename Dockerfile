@@ -12,17 +12,15 @@ RUN apt-get update -qq && apt-get -y --no-install-recommends install \
     libssh2-1-dev \
     unixodbc-dev \
     libcurl4-openssl-dev \
-    libssl-dev
+    libssl-dev \
+    perl
 
 ## update system libraries
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get clean
 
-# copy necessary files
-## app folder
-COPY /app ./app
-## renv.lock file
+# renv.lock file
 COPY renv.lock ./renv.lock
 
 # install renv & restore packages
@@ -35,8 +33,13 @@ RUN Rscript -e 'install.packages("Rcpp")' # Reinstall to fix errors
 RUN Rscript -e 'reticulate::install_miniconda()'
 RUN Rscript -e 'tensorflow::install_tensorflow()'
 
-# PIL is used for image cropping
+# PIL is used for image cropping, Scipy for statistics
 RUN Rscript -e 'reticulate::py_install("Pillow")'
+RUN Rscript -e 'reticulate::py_install("scipy")'
+
+# copy necessary files
+## app folder
+COPY /app ./app
 
 # expose port
 EXPOSE 3838
