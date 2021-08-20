@@ -177,17 +177,12 @@
       "Repository": "CRAN",
       "Hash": "bb0eec2fe32e88d9e2836c2f73ea2077"
     },
-    "exiftoolr": {
-      "Package": "exiftoolr",
-      "Version": "0.1.5",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "exiftoolr",
-      "RemoteUsername": "JoshOBrien",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "26fbd990911b37def100af51da7d0bc22d9f3f5d",
-      "Hash": "123833045379d5e22bc15d8abeaa23e5"
+    "exifr": {
+      "Package": "exifr",
+      "Version": "0.3.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "7e5e6d9140e2dbb379c1af6e24bc60da"
     },
     "fansi": {
       "Package": "fansi",
@@ -657,13 +652,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "ee9b643aa8331c45d8d82eb3a137c9bc"
-    },
-    "zip": {
-      "Package": "zip",
-      "Version": "2.2.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "c7eef2996ac270a18c2715c997a727c5"
     }
   }
 }

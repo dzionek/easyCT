@@ -3,7 +3,7 @@
 library(shiny)
 library(fs)
 library(dplyr)
-library(exiftoolr)
+library(exifr)
 library(plotly)
 library(lubridate)
 library(tidyr)
@@ -33,7 +33,7 @@ server <- function(input, output, session) {
   # Reading date and times of photos.
   exif_dates <- reactive({
     image_files <- file.path(parseDirPath(volumes, input$directory))
-    exif_data <- exif_full <- exif_read(
+    exif_data <- exif_full <- read_exif(
       image_files, recursive = TRUE, tags = c("SourceFile", "DateTimeOriginal")
     ) %>% 
       rename(datetime = DateTimeOriginal) %>%
@@ -83,7 +83,7 @@ server <- function(input, output, session) {
         group_by(date) %>%
         summarize(count = sum(value)) %>%
         mutate(type = switch(input$activity_type,
-          "weekly" = wday(date, label = T, week_start = 1, abbr = F),
+          "weekly" = lubridate::wday(date, label = T, week_start = 1, abbr = F),
           "daily" = as.POSIXct(str_pad(hour(date), 2, pad = "0"), format = "%H", tz= "UTC")
         )) %>%
         group_by(type) %>%
