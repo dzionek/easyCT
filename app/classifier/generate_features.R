@@ -78,6 +78,8 @@ get_features <- function(message, directory_path, top_trim, bottom_trim,
   files <- list.files(
     directory_path, pattern = "*.JPG|*.jpg", full.names = TRUE, recursive = TRUE
   )
+  # Exclude empty files
+  files <- files[sapply(files, file.size) > 1000]
   feature_list <- list()
   
   # Progress bar
