@@ -76,7 +76,7 @@ extract_features_inception_v3 <- function(img_path, top_trim, bottom_trim) {
 get_features <- function(message, directory_path, top_trim, bottom_trim,
                          save = FALSE, save_dir = NULL) {
   files <- list.files(
-    directory_path, pattern = "*.JPG|*.jpg", full.names = TRUE, recursive = TRUE
+    directory_path, pattern = "*.JPG$|*.jpg$", full.names = TRUE, recursive = TRUE
   )
   # Exclude empty files
   files <- files[sapply(files, file.size) > 1000]
