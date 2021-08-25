@@ -163,9 +163,9 @@ get_model_evaluations <- function(classify_model, test_x, test_y) {
 #' Save the model to a file.
 #' 
 #' @param classify_model The model created in the process
-#' @param model_name The name used for saving the file.
-save_model <- function(classify_model, model_name) {
-  classify_model %>% save_model_tf(paste0("_cache/models/", model_name))
+#' @param model_path The path to save the model.
+save_model <- function(classify_model, model_path) {
+  classify_model %>% save_model_tf(model_path)
 }
 
 #' Entry point for the entire process of trimming images, training model and
@@ -175,10 +175,10 @@ save_model <- function(classify_model, model_name) {
 #' @param bottom_trim The number of pixels that should be trimmed from the bottom.
 #' @param pos_directory_path The path to the positive set directory.
 #' @param neg_directory_path The path to the positive set directory.
-#' @param model_name The name of the model that will be the saved file name.
+#' @param model_path The oath used to save the model
 #' @return The list with loss, accuracy, absolute and proportion confusion matrix.
 trim_train_save <- function(top_trim, bottom_trim, pos_directory_path,
-                            neg_directory_path, model_name) {
+                            neg_directory_path, model_path) {
   
   c(inputs, outputs) %<-% get_input_output(pos_directory_path, neg_directory_path,
                                            top_trim, bottom_trim)
@@ -186,7 +186,7 @@ trim_train_save <- function(top_trim, bottom_trim, pos_directory_path,
   c(train_x, test_x, train_y, test_y) %<-% get_train_test_sets(inputs, outputs)
   
   model <- get_model(train_x, test_x, train_y, test_y)
-  save_model(model, model_name)
+  save_model(model, model_path)
   
   get_model_evaluations(model, test_x, test_y)
 }

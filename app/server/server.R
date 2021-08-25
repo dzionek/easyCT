@@ -18,8 +18,16 @@ source("classifier/model.R", local = TRUE)
 source("classifier/generate_features.R", local = TRUE)
 source("classifier/apply_model.R", local = TRUE)
 
-MODELS_PATH <- paste0(getwd(), "/_cache/models/")
-RESULTS_PATH <- paste0(getwd(), "/_cache/results/")
+# Path connection to your drive
+CACHE_PATH <- path(dirname(getwd()), "root", "photos", "easyCT")
+dir.create(CACHE_PATH, recursive = TRUE)  # make sure the directory exists when running the app
+
+MODELS_PATH <- path(CACHE_PATH, "models")
+dir.create(MODELS_PATH)
+
+RESULTS_PATH <- path(CACHE_PATH, "results")
+dir.create(RESULTS_PATH)
+
 MODEL_METADATA_FILE <- "meta.csv"
 
 POSITIVE_COLOR <- "#00CC96"
@@ -293,7 +301,7 @@ server <- function(input, output, session) {
         width = 12,
         
         selectInput(
-          "model_name", "Choose your model from the _cache/models directory:",
+          "model_name", "Choose your model from easyCT/models:",
           choices = list.dirs(MODELS_PATH, recursive = FALSE, full.names = FALSE)
         ),
         
@@ -339,7 +347,7 @@ server <- function(input, output, session) {
         as.numeric(input$top_trim), as.numeric(input$bottom_trim),
         parseDirPath(volumes, input$positive_dir),
         parseDirPath(volumes, input$negative_dir),
-        input$model_name
+        path(MODELS_PATH, input$model_name)
       )
     }
   })
@@ -362,11 +370,12 @@ server <- function(input, output, session) {
   
   output$train_result <- renderUI({
     if (is.numeric(training_results()$accuracy)) {
-      model_dir <- paste0(MODELS_PATH, input$model_name)
+      model_dir <- path(MODELS_PATH, input$model_name)
+      dir.create(model_dir)
       fwrite(
         list("positive_label" = input$positive_label,
              "negative_label" = input$negative_label),
-        file = paste0(model_dir, "/", MODEL_METADATA_FILE)
+        file = path(model_dir, MODEL_METADATA_FILE)
       )
       
       box(status = "danger", title = "Model path",
@@ -394,8 +403,8 @@ server <- function(input, output, session) {
   classification_results <- eventReactive(input$classify_button, {
     if (classifier_inputs_ready()) {
       time <- format(Sys.time(), "%d%h%Y_%H-%M")
-      dir.create(paste0(RESULTS_PATH, time), recursive = TRUE)
-      save_dir <- paste0(RESULTS_PATH, time)
+      save_dir <- path(RESULTS_PATH, time)
+      dir.create(save_dir)
       
       get_features(
         "images to classify", parseDirPath(volumes, input$classify_dir),
@@ -403,12 +412,12 @@ server <- function(input, output, session) {
       )
       
       apply_model(
-        source_dir = save_dir, model_name = paste0(MODELS_PATH, input$model_name),
+        source_dir = save_dir, model_name = path(MODELS_PATH, input$model_name),
         threshold = input$threshold, pos_label = input$positive_label, 
         neg_label = input$negative_label
       )
       
-      classified_path <- paste0(save_dir, "/_results_v3.csv")
+      classified_path <- path(save_dir, "_results_v3.csv")
       list(
         "path" = classified_path,
         "table" = fread(classified_path)

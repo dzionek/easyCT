@@ -49,7 +49,7 @@ classifier_tab.body <- tabItem(tabName = "classifier", fluidRow(
       selectInput(
         "new_model_selection", "Do you want to build a new model?",
         choices = list("Yes, create a new model." = TRUE,
-        "No, I want to use a model from _cache/models." = FALSE)
+        "No, I want to use a model from easyCT/models." = FALSE)
       )
     ),
     
