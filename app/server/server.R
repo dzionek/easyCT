@@ -19,9 +19,8 @@ source("classifier/generate_features.R", local = TRUE)
 source("classifier/apply_model.R", local = TRUE)
 
 # Path connection to your drive
-CACHE_PATH <- path(dirname(getwd()), "root", "easyCT_cache")
-dir.create(path(dirname(getwd()), "root"))
-dir.create(CACHE_PATH)  # make sure the directory exists when running the app
+CACHE_PATH <- path(dirname(getwd()), "root", "photos", "easyCT")
+dir.create(CACHE_PATH, recursive = TRUE)  # make sure the directory exists when running the app
 
 MODELS_PATH <- path(CACHE_PATH, "models")
 dir.create(MODELS_PATH)
@@ -302,7 +301,7 @@ server <- function(input, output, session) {
         width = 12,
         
         selectInput(
-          "model_name", "Choose your model from easyCT_cache/models:",
+          "model_name", "Choose your model from easyCT/models:",
           choices = list.dirs(MODELS_PATH, recursive = FALSE, full.names = FALSE)
         ),
         
