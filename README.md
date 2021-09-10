@@ -1,6 +1,36 @@
 # easyCT
 
-Camera trap data anlaysis easier than ever before thanks to machine learning classification. 
+Camera trap data anlaysis easier than ever before thanks to machine learning classification.
+
+<table>
+ 
+ <tr>
+  <th>
+   <img src="examples/description.png" width="100%">
+   <br>
+   Thorough description.
+  </th>
+  <th>
+   <img src="examples/time.png" width="100%">
+   <br>
+   Time analysis.
+  </th>
+ </tr>
+
+ <tr>
+  <th>
+   <img src="examples/training.png" width="100%">
+   <br>
+   Training your model.
+  </th>
+  <th>
+   <img src="examples/classification.png" width="100%">
+   <br>
+   Classification.
+  </th>
+ </tr>
+ 
+</table>
 
 ## Description
 
